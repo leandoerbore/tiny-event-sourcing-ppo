@@ -33,6 +33,7 @@ open class SecurityConfig(
             .antMatchers("/admin/**").hasAnyAuthority("ROLE_ADMIN")
             .antMatchers("/auth/**").permitAll()
             .antMatchers("/catalog/**").permitAll()
+            .antMatchers("/cart/**").permitAll()
             .anyRequest().authenticated().and().csrf().disable()
             .authenticationManager(authenticationManager)
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
