@@ -3,19 +3,15 @@ package ru.quipy.slots.controller
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import ru.quipy.core.EventSourcingService
 import ru.quipy.slots.api.*
 import ru.quipy.slots.dto.*
 import ru.quipy.slots.logic.*
-import ru.quipy.slots.service.SlotsRepository
-import ru.quipy.slots.service.SlotsMongo
-import ru.quipy.core.EventSourcingService
-import java.util.*
-import java.text.SimpleDateFormat
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.collections.ArrayList
-import java.lang.IllegalStateException
 import ru.quipy.slots.logic.SlotsAggregateState.Status
-
+import ru.quipy.slots.service.SlotsMongo
+import ru.quipy.slots.service.SlotsRepository
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 @RestController()
@@ -29,11 +25,18 @@ class SlotsController (
     fun createItem(@RequestBody request: CreateSlotDTO): Any {
         val dataFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm")
         val now = Date();
-        if (dataFormatter.parse(request.time) < now){
+        val requestTime = dataFormatter.parse(request.time)
+        val requestCalendar = GregorianCalendar.getInstance()
+        requestCalendar.time = requestTime
+
+        if (requestTime < now){ // слоты задним числом запрещены
             return ResponseEntity<Any>("Error: this time is gone", HttpStatus.UNPROCESSABLE_ENTITY)
         }
-        if (slotsRepository.findOneByTime(dataFormatter.parse(request.time)) != null) {
+        if (slotsRepository.findOneByTime(dataFormatter.parse(request.time)) != null) { // слоты с одинаковым временем запрещены
             return ResponseEntity<Any>("Error: created yet", HttpStatus.CONFLICT)
+        }
+        if (requestCalendar.get(Calendar.MINUTE) % 15 != 0) { // проверка на кратность времени 15 минутам
+            return ResponseEntity<Any>(null, HttpStatus.UNPROCESSABLE_ENTITY)
         }
         val slot = slotsESService.create{ it.createSlot(
                 time = request.time,
@@ -58,10 +61,10 @@ class SlotsController (
         return slotsESService.update(id){it.updateSlotStatus(id = id, request.status)}
     }
 
-    @GetMapping
-    fun getSlots(): Any {
+    @GetMapping("/available")
+    fun getAvailableSlots(): Any {
         val result = ArrayList<GetAvailableSlotsDTO>()
-        for (slot in slotsRepository.findAll()) {
+        for (slot in slotsRepository.findAllByStatus(Status.FREE)) {
             result.add(
                     GetAvailableSlotsDTO(
                             time = slotsESService.getState(slot.aggregateId)!!.getTime(),
