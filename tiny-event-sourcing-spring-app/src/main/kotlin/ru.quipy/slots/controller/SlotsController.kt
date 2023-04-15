@@ -30,10 +30,10 @@ class SlotsController (
         val dataFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm")
         val now = Date();
         if (dataFormatter.parse(request.time) < now){
-            return ResponseEntity<Any>(null, HttpStatus.UNPROCESSABLE_ENTITY)
+            return ResponseEntity<Any>("Error: this time is gone", HttpStatus.UNPROCESSABLE_ENTITY)
         }
         if (slotsRepository.findOneByTime(dataFormatter.parse(request.time)) != null) {
-            return ResponseEntity<Any>(null, HttpStatus.CONFLICT)
+            return ResponseEntity<Any>("Error: created yet", HttpStatus.CONFLICT)
         }
         val slot = slotsESService.create{ it.createSlot(
                 time = request.time,
