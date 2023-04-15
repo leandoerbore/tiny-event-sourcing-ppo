@@ -18,7 +18,7 @@ class UserDetailsService(
                 ?: throw UsernameNotFoundException("$username not found")
 
         return UserSecurity(
-            id = user.email,
+            id = user.aggregateId,
             email = user.email,
             uPassword = user.password,
             uAuthorities = Collections.singleton(SimpleGrantedAuthority(user.role))

@@ -16,12 +16,12 @@ data class CartCreatedEvent(
         name = CART_CREATED
 )
 
-@DomainEvent(name = CART_REMOVED)
-data class CartRemovedEvent(
-        val cartId: UUID,
-): Event<CartAggregate>(
-        name = CART_REMOVED
-)
+//@DomainEvent(name = CART_REMOVED)
+//data class CartRemovedEvent(
+//        val cartId: UUID,
+//): Event<CartAggregate>(
+//        name = CART_REMOVED
+//)
 
 @DomainEvent(name = CART_ADDED_ITEMS)
 data class CartAddedItems(

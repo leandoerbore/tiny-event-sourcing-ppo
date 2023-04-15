@@ -14,7 +14,7 @@ class CartAggregateState: AggregateState<UUID, CartAggregate> {
     fun getItems(): HashMap<UUID, Int> = items
 
     fun createNewCart(id: UUID = UUID.randomUUID()): CartCreatedEvent = CartCreatedEvent(id)
-    fun removeCart(id: UUID): CartRemovedEvent = CartRemovedEvent(id)
+//    fun removeCart(id: UUID): CartRemovedEvent = CartRemovedEvent(id)
     fun addItems(id: UUID, itemId: UUID, amount: Int): CartAddedItems {
         return CartAddedItems(
                 cartId = id,
@@ -23,7 +23,7 @@ class CartAggregateState: AggregateState<UUID, CartAggregate> {
         )
     }
     fun removeItems(id: UUID, itemId: UUID, amount: Int): CartRemovedItems {
-        if (!items.containsKey(id)) throw IllegalStateException("Error: there is no item with this id")
+        if (!items.containsKey(itemId)) throw IllegalStateException("Error: there is no item with this id")
         return CartRemovedItems(
                 cartId = id,
                 itemId = itemId,

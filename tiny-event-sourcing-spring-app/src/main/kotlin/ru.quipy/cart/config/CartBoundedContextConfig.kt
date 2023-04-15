@@ -17,5 +17,5 @@ class CartBoundedContextConfig {
     private lateinit var eventSourcingServiceFactory: EventSourcingServiceFactory
 
     @Bean
-    fun catalogItemESService(): EventSourcingService<UUID, CartAggregate, CartAggregateState> = eventSourcingServiceFactory.create()
+    fun cartItemESService(): EventSourcingService<UUID, CartAggregate, CartAggregateState> = eventSourcingServiceFactory.create()
 }
