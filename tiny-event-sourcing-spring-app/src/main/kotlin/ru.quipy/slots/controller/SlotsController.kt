@@ -10,7 +10,8 @@ import ru.quipy.slots.logic.*
 import ru.quipy.slots.logic.SlotsAggregateState.Status
 import ru.quipy.slots.service.SlotsMongo
 import ru.quipy.slots.service.SlotsRepository
-import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneOffset
 import java.util.*
 
 
@@ -23,19 +24,15 @@ class SlotsController (
 
     @PostMapping()
     fun createItem(@RequestBody request: CreateSlotDTO): Any {
-        val dataFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm")
-        val now = Date();
-        val requestTime = dataFormatter.parse(request.time)
-        val requestCalendar = GregorianCalendar.getInstance()
-        requestCalendar.time = requestTime
+        val now = Instant.now()
 
-        if (requestTime < now){ // слоты задним числом запрещены
+        if (request.time < now){ // слоты задним числом запрещены
             return ResponseEntity<Any>("Error: this time is gone", HttpStatus.UNPROCESSABLE_ENTITY)
         }
-        if (slotsRepository.findOneByTime(dataFormatter.parse(request.time)) != null) { // слоты с одинаковым временем запрещены
+        if (slotsRepository.findOneByTime(request.time) != null) { // слоты с одинаковым временем запрещены
             return ResponseEntity<Any>("Error: created yet", HttpStatus.CONFLICT)
         }
-        if (requestCalendar.get(Calendar.MINUTE) % 15 != 0) { // проверка на кратность времени 15 минутам
+        if (request.time.atZone(ZoneOffset.UTC).minute % 15 != 0) { // проверка на кратность времени 15 минутам
             return ResponseEntity<Any>(null, HttpStatus.UNPROCESSABLE_ENTITY)
         }
         val slot = slotsESService.create{ it.createSlot(
@@ -44,27 +41,27 @@ class SlotsController (
         )}
 
         return slotsRepository.save(SlotsMongo(
-                time = slot.time,
-                status =  slot.status,
-                aggregateId = slot.slotId
+            aggregateId = slot.slotId,
+            time = slot.time,
+            status =  slot.status
         ))
     }
 
-    @PatchMapping("/status/{id}")
-    fun updateSlotStatus(@PathVariable id: UUID, @RequestBody request: UpdateSlotStatusDTO): Any {
-        if (slotsRepository.findOneByAggregateId(id) == null) {
+    @PatchMapping("/status")
+    fun updateSlotStatus(@RequestBody request: UpdateSlotStatusDTO): Any {
+        if (slotsRepository.findOneByAggregateId(request.id) == null) {
             return ResponseEntity<Any>(null, HttpStatus.BAD_REQUEST)
         }
-        if (request.status == slotsRepository.findOneByAggregateId(id)!!.status.status){
+        if (request.status == slotsRepository.findOneByAggregateId(request.id)!!.status){
             return ResponseEntity<Any>(null, HttpStatus.CONFLICT)
         }
-        return slotsESService.update(id){it.updateSlotStatus(id = id, request.status)}
+        return slotsESService.update(request.id){it.updateSlotStatus(id = request.id, request.status)}
     }
 
     @GetMapping("/available")
     fun getAvailableSlots(): Any {
         val result = ArrayList<GetAvailableSlotsDTO>()
-        for (slot in slotsRepository.findAllByStatus(Status.FREE)) {
+        for (slot in slotsRepository.findAllByStatusAndTimeAfter(Status.FREE, Instant.now())) {
             result.add(
                     GetAvailableSlotsDTO(
                             time = slotsESService.getState(slot.aggregateId)!!.getTime(),
@@ -75,5 +72,13 @@ class SlotsController (
         }
 
         return result
+    }
+
+    @DeleteMapping("/remove")
+    fun removeSlot(@RequestBody request: RemoveSlotDTO): Any {
+        if (slotsRepository.findOneByAggregateId(request.id) == null) {
+            return ResponseEntity<Any>(null, HttpStatus.BAD_REQUEST)
+        }
+        return slotsESService.update(request.id){it.removeSlot(id = request.id)}
     }
 }

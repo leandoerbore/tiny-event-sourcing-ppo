@@ -3,6 +3,7 @@ package ru.quipy.slots.api
 import ru.quipy.core.annotations.DomainEvent
 import ru.quipy.domain.Event
 import java.util.*
+import java.time.Instant
 import ru.quipy.slots.logic.SlotsAggregateState.Status
 
 const val SLOT_CREATED = "SLOT_CREATED"
@@ -12,7 +13,7 @@ const val SLOT_UPDATED_STATUS = "SLOT_UPDATED_STATUS"
 @DomainEvent(name = SLOT_CREATED)
 data class SlotCreatedEvent(
         val slotId: UUID,
-        val time: Date,
+        val time: Instant,
         val status: Status
 ) : Event<SlotsAggregate>(
         name = SLOT_CREATED
