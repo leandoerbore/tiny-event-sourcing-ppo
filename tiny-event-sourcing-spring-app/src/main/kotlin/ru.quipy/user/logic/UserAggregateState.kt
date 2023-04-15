@@ -27,8 +27,9 @@ class UserAggregateState: AggregateState<UUID, UserAggregate> {
 
     fun createUser(id: UUID = UUID.randomUUID()): UserCreatedEvent = UserCreatedEvent(id)
     fun createNewCart(id: UUID, cartId: UUID): UserCreatedCartEvent = UserCreatedCartEvent(id, cartId)
-    fun createResetCart(id: UUID, cartId: UUID): UserResetCartEvent = UserResetCartEvent(id, cartId)
-    fun createAddTrack(id: UUID, trackId: UUID): UserAddTrackEvent = UserAddTrackEvent(id, trackId)
+    fun resetCart(id: UUID, cartId: UUID): UserResetCartEvent = UserResetCartEvent(id, cartId)
+    fun addTrack(id: UUID, trackId: UUID): UserAddTrackEvent = UserAddTrackEvent(id, trackId)
+
 
     @StateTransitionFunc
     fun createUser(event: UserCreatedEvent) {
@@ -42,13 +43,15 @@ class UserAggregateState: AggregateState<UUID, UserAggregate> {
     }
 
     @StateTransitionFunc
-    fun createResetCart(event: UserResetCartEvent) {
+    fun resetCart(event: UserResetCartEvent) {
         userId = event.userId
-        resetField(this, "cartId")
+        cartId = event.cartId
+
+//        resetField(this, "cartId")
     }
 
     @StateTransitionFunc
-    fun createAddTrack(event: UserAddTrackEvent) {
+    fun addTrack(event: UserAddTrackEvent) {
         userId = event.userId
         trackerIds.add(event.trackId)
     }
