@@ -13,7 +13,7 @@ class SlotsAggregateState: AggregateState<UUID, SlotsAggregate> {
         FREE("FREE"),
         OCCUPIED("OCCUPIED")
     }
-    val dateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm")
+    private val dateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm")
 
     private lateinit var slotId: UUID
     private lateinit var time: Date
