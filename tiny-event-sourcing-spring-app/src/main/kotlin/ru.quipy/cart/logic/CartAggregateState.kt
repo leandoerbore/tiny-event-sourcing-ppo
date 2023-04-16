@@ -49,7 +49,7 @@ class CartAggregateState: AggregateState<UUID, CartAggregate> {
     fun removeItems(event: CartRemovedItems){
         val left = items[event.itemId]!! - event.amount
         if (left < 0 ){
-            items[event.itemId] = 0
+            items.remove(event.itemId)
         } else {
             items[event.itemId] = left
         }
