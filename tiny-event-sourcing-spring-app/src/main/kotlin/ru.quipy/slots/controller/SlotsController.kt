@@ -23,7 +23,7 @@ class SlotsController (
 ){
 
     @PostMapping()
-    fun createItem(@RequestBody request: CreateSlotDTO): Any {
+    fun createItem(@RequestBody request: CreateSlotDTO): ResponseEntity<Any> {
         val now = Instant.now()
 
         if (request.time < now){ // слоты задним числом запрещены
@@ -40,26 +40,24 @@ class SlotsController (
                 status = request.status
         )}
 
-        return slotsRepository.save(SlotsMongo(
+        return ResponseEntity.ok( slotsRepository.save(SlotsMongo(
             aggregateId = slot.slotId,
             time = slot.time,
             status =  slot.status
-        ))
+        )))
     }
 
     @PatchMapping("/status")
-    fun updateSlotStatus(@RequestBody request: UpdateSlotStatusDTO): Any {
+    fun updateSlotStatus(@RequestBody request: UpdateSlotStatusDTO): ResponseEntity<Any> {
         if (slotsRepository.findOneByAggregateId(request.id) == null) {
             return ResponseEntity<Any>(null, HttpStatus.BAD_REQUEST)
         }
-        if (request.status == slotsRepository.findOneByAggregateId(request.id)!!.status){
-            return ResponseEntity<Any>(null, HttpStatus.CONFLICT)
-        }
-        return slotsESService.update(request.id){it.updateSlotStatus(id = request.id, request.status)}
+
+        return ResponseEntity.ok(slotsESService.update(request.id){it.updateSlotStatus(id = request.id, request.status)})
     }
 
     @GetMapping("/available")
-    fun getAvailableSlots(): Any {
+    fun getAvailableSlots(): ResponseEntity<Any> {
         val result = ArrayList<GetAvailableSlotsDTO>()
         for (slot in slotsRepository.findAllByStatusAndTimeAfter(Status.FREE, Instant.now())) {
             result.add(
@@ -71,14 +69,15 @@ class SlotsController (
             )
         }
 
-        return result
+        return ResponseEntity.ok(result)
     }
 
+
     @DeleteMapping("/remove")
-    fun removeSlot(@RequestBody request: RemoveSlotDTO): Any {
+    fun removeSlot(@RequestBody request: RemoveSlotDTO): ResponseEntity<Any> {
         if (slotsRepository.findOneByAggregateId(request.id) == null) {
             return ResponseEntity<Any>(null, HttpStatus.BAD_REQUEST)
         }
-        return slotsESService.update(request.id){it.removeSlot(id = request.id)}
+        return ResponseEntity.ok(slotsESService.update(request.id){it.removeSlot(id = request.id)})
     }
 }
