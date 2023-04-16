@@ -47,7 +47,7 @@ class SlotsAggregateState: AggregateState<UUID, SlotsAggregate> {
     }
 
     @StateTransitionFunc
-    fun removeItem(event: SlotRemovedEvent){
+    fun removeSlot(event: SlotRemovedEvent){
         resetField(this, "slotId")
     }
 

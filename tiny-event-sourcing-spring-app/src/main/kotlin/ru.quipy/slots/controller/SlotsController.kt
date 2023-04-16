@@ -59,7 +59,26 @@ class SlotsController (
     @GetMapping("/available")
     fun getAvailableSlots(): ResponseEntity<Any> {
         val result = ArrayList<GetAvailableSlotsDTO>()
-        for (slot in slotsRepository.findAllByStatusAndTimeAfter(Status.FREE, Instant.now())) {
+        for (slot in slotsRepository.findAll()) {
+            if (slotsESService.getState(slot.aggregateId)!!.getTime() > Instant.now() && slotsESService.getState(slot.aggregateId)!!.getStatus()!! == Status.FREE)
+            {
+                result.add(
+                        GetAvailableSlotsDTO(
+                                time = slotsESService.getState(slot.aggregateId)!!.getTime(),
+                                status = slotsESService.getState(slot.aggregateId)!!.getStatus(),
+                                id = slotsESService.getState(slot.aggregateId)!!.getId()
+                        )
+                )
+            }
+        }
+
+        return ResponseEntity.ok(result)
+    }
+
+    @GetMapping
+    fun getAllSlots(): ResponseEntity<Any> {
+        val result = ArrayList<GetAvailableSlotsDTO>()
+        for (slot in slotsRepository.findAll()) {
             result.add(
                     GetAvailableSlotsDTO(
                             time = slotsESService.getState(slot.aggregateId)!!.getTime(),
@@ -67,17 +86,18 @@ class SlotsController (
                             id = slotsESService.getState(slot.aggregateId)!!.getId()
                     )
             )
+
         }
 
         return ResponseEntity.ok(result)
     }
 
 
-    @DeleteMapping("/remove")
-    fun removeSlot(@RequestBody request: RemoveSlotDTO): ResponseEntity<Any> {
-        if (slotsRepository.findOneByAggregateId(request.id) == null) {
+    @DeleteMapping("/remove/{id}")
+    fun removeSlot(@PathVariable id: UUID): ResponseEntity<Any> {
+        if (slotsRepository.findOneByAggregateId(id) == null) {
             return ResponseEntity<Any>(null, HttpStatus.BAD_REQUEST)
         }
-        return ResponseEntity.ok(slotsESService.update(request.id){it.removeSlot(id = request.id)})
+        return ResponseEntity.ok(slotsESService.update(id){it.removeSlot(id = id)})
     }
 }
