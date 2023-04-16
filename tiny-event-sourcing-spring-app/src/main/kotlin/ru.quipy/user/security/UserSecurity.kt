@@ -1,11 +1,12 @@
-package ru.quipy.user.JWTUtil
+package ru.quipy.user.security
 
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
+import java.util.UUID
 
 class UserSecurity
     (
-    val id: String,
+    val id: UUID,
     val email: String,
     private val uPassword: String,
     private val uAuthorities: MutableCollection<GrantedAuthority>

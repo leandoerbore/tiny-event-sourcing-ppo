@@ -1,4 +1,4 @@
-package ru.quipy.user.JWTUtil
+package ru.quipy.user.security
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
@@ -14,17 +14,11 @@ class UserDetailsService(
     private val repository: UserRepository
 ) : UserDetailsService {
     override fun loadUserByUsername(username: String): UserDetails {
-        System.out.println(username);
-        // Create a method in your repo to find a user by its username
         val user = repository.findOneByEmail(username)
-        System.out.println(user);
-
-        if (user == null) {
-            throw UsernameNotFoundException("$username not found")
-        }
+                ?: throw UsernameNotFoundException("$username not found")
 
         return UserSecurity(
-            id = user.email,
+            id = user.aggregateId,
             email = user.email,
             uPassword = user.password,
             uAuthorities = Collections.singleton(SimpleGrantedAuthority(user.role))
