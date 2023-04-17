@@ -45,9 +45,17 @@ class CartController(
     @PostMapping("/addItem")
     fun addItem(@RequestBody request: AddItemsDTO): ResponseEntity<Any>{
         val userLogged = (SecurityContextHolder.getContext().authentication.principal as UserSecurity)
+        if (catalogItemESService.getState(request.itemId) != null){
+            ResponseEntity.badRequest().body("No such items")
+        }
+
+        if (catalogItemESService.getState(request.itemId)!!.getAmount()!! > request.amount){
+            ResponseEntity.badRequest().body("No such items, there is left ${catalogItemESService.getState(request.itemId)!!.getAmount()!!}")
+        }
         val cartId = userESService.getState(userLogged.id)!!.getCart()!!
         mutexAddItem.lock()
         try {
+            catalogItemESService.update(request.itemId){it.removeItemAmount(request.itemId, request.amount)}
             cartESservice.update(cartId){it.addItems(cartId, request.itemId, request.amount)}
         }finally {
             mutexAddItem.unlock()
@@ -58,9 +66,13 @@ class CartController(
     @PostMapping("/removeItem")
     fun removeItem(@RequestBody request: AddItemsDTO): ResponseEntity<Any>{
         val userLogged = (SecurityContextHolder.getContext().authentication.principal as UserSecurity)
+        if (catalogItemESService.getState(request.itemId) != null){
+            ResponseEntity.badRequest().body("No such items")
+        }
         val cartId = userESService.getState(userLogged.id)!!.getCart()!!
         mutexAddItem.lock()
         try {
+            catalogItemESService.update(request.itemId){it.addItemAmount(request.itemId, request.amount)}
             cartESservice.update(cartId){it.removeItems(cartId, request.itemId, request.amount)}
         }finally {
             mutexAddItem.unlock()

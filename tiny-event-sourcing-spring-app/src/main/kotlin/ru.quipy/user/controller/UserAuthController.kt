@@ -25,18 +25,19 @@ class UserAuthController (
         val cartESService: EventSourcingService<UUID, CartAggregate, CartAggregateState>
 ) {
     @PostMapping("/signUp")
-    fun registration(@RequestBody request: UserRegisterDTO): Any {
+    fun registration(@RequestBody request: UserRegisterDTO): ResponseEntity<Any> {
         if (usersRepository.findOneByEmail(request.email) != null) {
             return ResponseEntity<Any>(null, HttpStatus.CONFLICT)
         }
         val cartId = cartESService.create { it.createNewCart() }.cartId
         val userId = userEsService.create { it.createUser() }.userId
         userEsService.update(userId){it.createNewCart(userId, cartId)}
-        return usersRepository.save(UserMongo(
+        val user = usersRepository.save(UserMongo(
                 email = request.email,
                 password =  passwordEncoder.encode(request.password),
                 aggregateId = userId,
                 role = "user"
         ))
+        return ResponseEntity.ok("UserId: $userId, CartId: $cartId")
     }
 }

@@ -5,7 +5,7 @@ import ru.quipy.domain.Event
 import java.util.UUID
 
 const val CART_CREATED = "CART_CREATED"
-const val CART_REMOVED = "CART_REMOVED"
+//const val CART_REMOVED = "CART_REMOVED"
 const val CART_ADDED_ITEMS = "CART_ADDED_ITEMS"
 const val CART_REMOVED_ITEMS = "CART_REMOVED_ITEMS"
 
