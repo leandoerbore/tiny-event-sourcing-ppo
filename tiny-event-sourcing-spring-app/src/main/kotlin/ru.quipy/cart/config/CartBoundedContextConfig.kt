@@ -7,8 +7,6 @@ import ru.quipy.cart.api.CartAggregate
 import ru.quipy.cart.logic.CartAggregateState
 import ru.quipy.core.EventSourcingService
 import ru.quipy.core.EventSourcingServiceFactory
-import ru.quipy.delivery.api.DeliveryAggregate
-import ru.quipy.delivery.logic.DeliveryAggregateState
 import java.util.UUID
 
 @Configuration

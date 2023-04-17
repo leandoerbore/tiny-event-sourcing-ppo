@@ -52,8 +52,8 @@ class DeliveryAggregateState: AggregateState<UUID, DeliveryAggregate> {
             )
     @StateTransitionFunc
     fun updateStatusDelivery(event: DeliveryStatusUpdated){
-        deliveryId = deliveryId
-        status = status
+        deliveryId = event.deliveryId
+        status = event.status
     }
 
     @StateTransitionFunc

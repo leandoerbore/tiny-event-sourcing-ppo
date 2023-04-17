@@ -2,7 +2,7 @@ package ru.quipy.catalog.api
 
 import ru.quipy.core.annotations.DomainEvent
 import ru.quipy.domain.Event
-import java.util.*
+import java.util.UUID
 
 const val ITEM_CREATED = "ITEM_CREATED"
 const val ITEM_REMOVED = "ITEM_REMOVED"

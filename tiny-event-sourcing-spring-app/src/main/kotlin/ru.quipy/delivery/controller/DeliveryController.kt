@@ -12,7 +12,8 @@ import ru.quipy.cart.api.CartAggregate
 import ru.quipy.cart.logic.CartAggregateState
 import ru.quipy.core.EventSourcingService
 import ru.quipy.delivery.api.DeliveryAggregate
-import ru.quipy.delivery.api.createDeliveryDTO
+import ru.quipy.delivery.api.CreateDeliveryDTO
+import ru.quipy.delivery.api.updateDeliveryStatusDTO
 import ru.quipy.delivery.logic.DeliveryAggregateState
 import ru.quipy.slots.api.SlotsAggregate
 import ru.quipy.slots.logic.SlotsAggregateState
@@ -28,16 +29,16 @@ import java.util.UUID
 class DeliveryController (
         val deliveryESService: EventSourcingService<UUID, DeliveryAggregate, DeliveryAggregateState>,
         val userESService: EventSourcingService<UUID, UserAggregate, UserAggregateState>,
-//        val cartESService: EventSourcingService<UUID, CartAggregate, CartAggregateState>,
-//        val slotsESService: EventSourcingService<UUID, SlotsAggregate, SlotsAggregateState>,
+        val cartESService: EventSourcingService<UUID, CartAggregate, CartAggregateState>,
+        val slotsESService: EventSourcingService<UUID, SlotsAggregate, SlotsAggregateState>,
         val slotsRepository: SlotsRepository
 ){
     @PostMapping()
-    fun createDelivery(@RequestBody request: createDeliveryDTO): ResponseEntity<Any> {
+    fun createDelivery(@RequestBody request: CreateDeliveryDTO): ResponseEntity<Any> {
         val userLogged = (SecurityContextHolder.getContext().authentication.principal as UserSecurity)
         val cartId = userESService.getState(userLogged.id)!!.getCart()
                 ?: return ResponseEntity.badRequest().body("No cart id")
-        if (request.time > Instant.now()){
+        if (request.time < Instant.now()){
             return ResponseEntity.badRequest().body("Time is gone")
         }
         val slot = slotsRepository.findOneByTime(request.time)
@@ -46,7 +47,8 @@ class DeliveryController (
                 userId = userLogged.id,
                 cartId = cartId,
                 time = request.time
-        )}.id
+        )}.deliveryId
+        slotsESService.update(slot.aggregateId){it.updateSlotStatus(slot.aggregateId, SlotsAggregateState.Status.OCCUPIED)}
         return ResponseEntity.ok("deliveryId: $deliveryId")
     }
 
@@ -54,6 +56,16 @@ class DeliveryController (
     fun trackDelivery(@PathVariable id: UUID): ResponseEntity<Any>{
         val delivery = deliveryESService.getState(id)!!.getInfo()
 
+        return ResponseEntity.ok(delivery)
+    }
+
+    @PostMapping("/status/{id}")
+    fun updateStatus(@PathVariable id: UUID ,@RequestBody requestBody: updateDeliveryStatusDTO): ResponseEntity<Any>{
+        deliveryESService.update(id){it.updateStatusDelivery(
+                deliveryId = id,
+                status = requestBody.status
+        )}
+        val delivery = deliveryESService.getState(id)!!.getInfo()
         return ResponseEntity.ok(delivery)
     }
 }
