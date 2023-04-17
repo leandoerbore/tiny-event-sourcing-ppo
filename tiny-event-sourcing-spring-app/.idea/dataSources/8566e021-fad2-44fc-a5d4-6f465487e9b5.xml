@@ -165,27 +165,27 @@
       <DasType>String|12s</DasType>
       <Position>1</Position>
     </column>
-    <column id="50" parent="12" name="aggregateId">
+    <column id="50" parent="12" name="_class">
+      <DasType>String|12s</DasType>
+      <Position>1</Position>
+    </column>
+    <column id="51" parent="12" name="aggregateId">
       <DasType>BinData|12s</DasType>
       <Position>1</Position>
     </column>
-    <column id="51" parent="12" name="aggregateVersion">
+    <column id="52" parent="12" name="aggregateVersion">
       <DasType>Int64|12s</DasType>
       <Position>1</Position>
     </column>
-    <column id="52" parent="12" name="createdAt">
+    <column id="53" parent="12" name="createdAt">
       <DasType>Int64|12s</DasType>
       <Position>1</Position>
     </column>
-    <column id="53" parent="12" name="eventTitle">
+    <column id="54" parent="12" name="eventTitle">
       <DasType>String|12s</DasType>
       <Position>1</Position>
     </column>
-    <column id="54" parent="12" name="payload">
-      <DasType>String|12s</DasType>
-      <Position>1</Position>
-    </column>
-    <column id="55" parent="12" name="_class">
+    <column id="55" parent="12" name="payload">
       <DasType>String|12s</DasType>
       <Position>1</Position>
     </column>
